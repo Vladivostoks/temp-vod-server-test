@@ -1,0 +1,17 @@
+{
+    "Source": [{
+            "sources": [{
+                "src": "./IMG_0837.TRIM.MP4",
+                "type": "video/mp4"
+            }],
+            "poster": "IMG_0837.TRIM.MP4"
+        },
+        {
+            "sources": [{
+                "src": "http://media.w3.org/2010/05/sintel/trailer.mp4",
+                "type": "video/mp4"
+            }],
+            "poster": "http://media.w3.org/2010/05/sintel/poster.png"
+        }
+    ]
+}
