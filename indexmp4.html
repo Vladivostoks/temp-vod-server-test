@@ -13,7 +13,7 @@
     .video-js .vjs-time-control{display:block;}
     .video-js .vjs-remaining-time{display: block;}
     </style>
-    <video id="videoPlayer" v-bind:class="vedioClass">
+    <video id="videoPlayer" webkit-playsinline playsinline  v-bind:class="vedioClass">
     <p class="vjs-no-js">
         To view this video please enable JavaScript, and consider upgrading to a web browser that
         <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
@@ -26,7 +26,7 @@
      //获取服务端信息
     //获取当前域
       console.log(document.domain);
-      axios.get('http://173.255.252.183/data/videolist.json')
+      axios.get('http://173.255.252.183/data/videolist.json?t=' + Date.now())
       .then(response=>{
         console.log(response.data.List);
       })
@@ -59,6 +59,7 @@
             controls:true,
             /*预加载 仅元数据*/
             preload:"metadata",
+            //preload:"autoplay",
             /*宽度*/
             width:"640",
             /*高度*/
@@ -76,20 +77,24 @@
                 }],
             /*使用技术*/
             techOrder: ["html5"],
+            /*速率*/
+            playbackRates: [0.5, 1, 1.5, 2],
             /*控制条*/
             controlBar: {
-                'captionsButton': true,
-                'chaptersButton': true,
-                'playbackRateMenuButton': true,
-                'LiveDisplay': false,
-                'subtitlesButton': true,
+                //'descriptionsButton': true,
+                //'chaptersButton': true,
+                //'playbackRateMenuButton': true,
+                //'LiveDisplay': false,
+                'subsCapsButton': true,
                 /*当前播放时间*/
-                //'CurrentTimeDisplay': true,
+                'currentTimeDisplay': true,
+                'timeDivider':true,
+                'durationDisplay':true,
                 /*剩余播放时间*/
-                'RemainingTimeDisplay': true,
+                //'RemainingTimeDisplay': true,
                 'progressControl': true,
                 /*音量组件竖直*/
-                'volumeMenuButton': {
+                'volumePanel': {
                     inline: false,
                     vertical: true
                 },
@@ -100,84 +105,15 @@
     }
     //设置默认URl
     mp4Option.poster='IMG_0837.TRIM.jpg';
-    mp4Option.sources[0].src='IMG_0837.TRIM.MP4';
+    mp4Option.sources[0].src='IMG_0837.TRIM.mp4';
     var mp4Player = videojs('videoPlayer',mp4Option,function playerReady(){
         console.log('videoPlayer init!');
         console.log(this.networkState());
     });
    
     //设置播放url
-    mp4Player.src('IMG_0837.TRIM.MP4?start=8&&end=12')
+    mp4Player.src('IMG_0837.TRIM.mp4');
     mp4Player.poster('IMG_0837.TRIM.jpg');
-    /*添加播放列表 
-    mp4Player.playlist([{
-        sources: [{
-            src: './IMG_0837.TRIM.MP4',
-            type: 'video/mp4'
-            }],
-            poster:'IMG_0837.TRIM.MP4'
-    },{
-        sources: [{
-            src: 'http://media.w3.org/2010/05/sintel/trailer.mp4',
-            type: 'video/mp4'
-            }],
-            poster: 'http://media.w3.org/2010/05/sintel/poster.png'
-    }]);
-    mp4Player.playlist.autoadvance(0);
-*/
-    //播放器初始化操作面板清晰度菜单
-/*
-	function playerinitvideo() {
-		$videopanelmenu = $(".vjs-fullscreen-control");
-		$videopanelmenu.before('<div class="vjs-subtitles-button vjs-menu-button vjs-menu-button-popup vjs-control vjs-button" tabindex="0" role="menuitem" aria-live="polite" aria-expanded="false" aria-haspopup="true">'
-						+ '<div class="vjs-menu" role="presentation">'
-						+ '<ul class="vjs-menu-content" role="menu">'
-						+ '<li class="vjs-menu-item" tabindex="-1" role="menuitemcheckbox"  onclick="changeurl(this)">高清</li>'
-						+ '<li class="vjs-menu-item vjs-selected" tabindex="-1" role="menuitemcheckbox"  onclick="changeurl(this)">标清 </li>'
-						+ '</ul></div><span class="vjs-control-text">清晰度</span></div>');
-		}
-	//加载页面进行播放器初始化
-	player.ready(function() {
-		playerinitvideo();
-		//player.play();
-		//setsrc(player,"rtmp://192.168.30.21/live/test3","rtmp/flv");
-	});
-*/
-	//通过id获取DOM
-	function get(index) {
-		return vmVedio.$el;
-	}
-    var Media = vmVedio.$el;
-	//修改播放地址并播放
-	function writeAddressAndPlay(index,url,type) {
-		//播放器操作
-		setsrc(index, url, type?type:"rtmp/flv");
-		play(index);
-	}
-	//高清标清切换就是应用名加减HD
-	function changeUrl(video) {
-		var index = $(video).text();
-		//获取当前播放的url
-		var CurrentUrl = getCurrentAddr(player);
-		$(".vjs-menu-item").removeClass("vjs-selected");
-			$(video).addClass("vjs-selected");
-		if (index == "高清") {
-			if (CurrentUrl.indexOf("HD") == -1) {
-				CurrentUrl = CurrentUrl + "HD";
-			} else {
-				return;
-			}
-		} else {
-			if (CurrentUrl.indexOf("HD") != -1) {
-				CurrentUrl = CurrentUrl.replace("HD", "");
-			} else {
-				return;
-			}
-		}
-		//修改地址并播放
-		writeAddressAndPlay(player, CurrentUrl);
-	}
-
 
     /*
     * 根据videoJS官方文档编写的播放器常用操作  
@@ -206,7 +142,6 @@
     //监听事件
     mp4Player.on('play', function () {
         console.log('start/continue');
-        this.currentTime(8);
     });
 
     mp4Player.on('pause', function () {
@@ -219,6 +154,23 @@
     });
  
     mp4Player.on('timeupdate', function() {
+           console.log(this.currentTime());
+           console.log(this.networkState());
+    });
+
+    mp4Player.on('abort', function() {
+           console.log(this.currentTime());
+           console.log(this.networkState());
+    });
+    mp4Player.on('loadstart', function() {
+           console.log(this.currentTime());
+           console.log(this.networkState());
+    });
+    mp4Player.on('suspend', function() {
+           console.log(this.currentTime());
+           console.log(this.networkState());
+    });
+    mp4Player.on('stalled', function() {
            console.log(this.currentTime());
            console.log(this.networkState());
     });
